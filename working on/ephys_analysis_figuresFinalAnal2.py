@@ -687,56 +687,6 @@ def numSpikes_figure(folder):
 
 
 
-# data_all = output_negSteps
-# drug = 'PEA'
-def negativeStepsAnalysis(data_all, folder):
-    voltage = data_all[3]
-    current = data_all[2]
-    
-    stepInfo = startEnd_steps(current[1],'neg')
-    
-    # take the last half of the negative current step "steady state"
-    ss_Start = int((stepInfo[1]-stepInfo[0])/2 + stepInfo[0])
-    
-    recorded_amplitude = np.mean(voltage[:,:,ss_Start:stepInfo[1]],2)
-    
-    # set up dataframe to save
-    stepValues=absoluteStepValues(data_all)
-    df = pd.DataFrame(data=recorded_amplitude,columns=stepValues[1],index=data_all[0])
-    
-    df.to_csv(folder + r'\\analysedData\\' + 'negativeStepValues_in-mV_py.csv')
-    
-
-    linRegress_results=[] # slope in ohms, intercept in mV
-    for trial in range(len(recorded_amplitude)): 
-         hdr = stats.linregress(stepValues[1]*1e-6,recorded_amplitude[trial]) 
-         linRegress_results.append(hdr)
-
-    
-    df_ns = pd.DataFrame(data=linRegress_results,index=data_all[0])
-    df_ns.to_csv(folder + r'\\analysedData\\' + 'negativeStepResults_py.csv')
-    return
-
-
-# needs stepValues, linRegress_results & recorded_amplitude     
-def negativeSteps_figure(data_all, folder, drug):
-    fig = plt.gcf()      
-    ax = plt.subplot(111)  
-    #baseline
-    plt.plot(stepValues[1], linRegress_results[0].intercept + (linRegress_results[0].slope/1e6)*stepValues[1], '--', linewidth=2, color=getExpColors('baseline'), label='Baseline')
-    plt.plot(stepValues[1],recorded_amplitude[0],'o',color=getExpColors('baseline'))
-
-    # drug
-    plt.plot(stepValues[1], linRegress_results[1].intercept + (linRegress_results[1].slope/1e6)*stepValues[1],  '--', linewidth=2, color=getExpColors(drug), label=drug)
-    plt.plot(stepValues[1],recorded_amplitude[1],'o',color=getExpColors(drug))
-    pf.lrBorders(ax)
-    fig.set_size_inches(4.5,4.5)
-    plt.legend(frameon=False)
-    plt.xlabel('Current (pA)')
-    plt.ylabel('Voltage (mV)')
-    pf.saveFigurePNG(fig,folder + r'\\figures\\','inputResistance_py')
-    
-    return 
 
 def finalNumSpikes():
     folder = r'Z:\Labs\Frank Lab\Carmel\Ephys\Hippo'
@@ -925,9 +875,24 @@ def finalCurrentHoldsHEK_oneFigure():
     loc_dataSummary = folder + '\\deltaCurrent_vehicle_noInc-Inc-Cap_CPZ_UV_muant_noTRPV1.csv'
     
     df = pd.read_csv(loc_dataSummary,index_col=0)
+      
     
+    import seaborn as sns
     
-    #capWashOn = df[df['what'] == 'capWashOn']
+    fig = plt.figure()
+    sns.boxplot(x='what',y='diff',data=df, width=0.75, showfliers = False,
+                flierprops={"markersize": 8},
+                boxprops={"facecolor": (.0, .0, .0, .0)},
+                medianprops={"color": "DarkCyan"},)
+    for i in range(len(data[1])):
+           y = data[:,i]
+           x = np.random.normal(0+i, 0.04, size=len(y))
+           P.plot(x, y, 'r.', markersize=12, alpha=0.6)
+    my_xticks = ['DMSO', 'Cap', 'Unteth', 'Teth', 'CPZ','no TRPV1','Mutant']
+    x=np.array([0,1,2,3,4,5,6])
+    plt.xticks(x, my_xticks,rotation=30)       
+    fig.set_size_inches(5,5) 
+    
     
     
     arrayValues = np.array(df['diff'])

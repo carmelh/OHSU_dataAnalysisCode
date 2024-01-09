@@ -284,6 +284,7 @@ def numSpikes(data_all,folder):
     df_ns['Threshold'] = threshold_idx
     df_ns.to_csv(folder + r'\\analysedData\\' + 'numSpikesThreshold_py.csv')
     
+    print("Analysed number of spikes...")
     return stepValues, num_spikes, threshold_idx
 
 
@@ -315,6 +316,8 @@ def access_resistance(output_posSteps, folder):
     df_ar['deviation'] = fileDeviation
     
     df_ar.to_csv(folder + r'\\analysedData\\' + 'access_resistance_inMOhms_py.csv')
+    
+    print("Analysed access resistance...")
     return
 
 
@@ -339,6 +342,40 @@ def rmp(output_posSteps, folder):
     df_rmp['deviation'] = fileDeviation
     
     df_rmp.to_csv(folder + r'\\analysedData\\' + 'rmp_py.csv')
+    
+    print("Analysed resting membrane potential...")
+    return
+
+
+def inputResistance(data_all, folder):
+    ''' calculates the input resistance from the negative current steps'''
+    voltage = data_all[3]
+    current = data_all[2]
+    
+    stepInfo = startEnd_steps(current[1],'neg')
+    
+    # take the last half of the negative current step "steady state"
+    ss_Start = int((stepInfo[1]-stepInfo[0])/2 + stepInfo[0])
+    
+    recorded_amplitude = np.mean(voltage[:,:,ss_Start:stepInfo[1]],2)
+    
+    # set up dataframe to save
+    stepValues=absoluteStepValues(data_all)
+    df = pd.DataFrame(data=recorded_amplitude,columns=stepValues[1],index=data_all[0])
+    
+    df.to_csv(folder + r'\\analysedData\\' + 'negativeStepValues_in-mV_py.csv')
+    
+
+    linRegress_results=[] # slope in ohms, intercept in mV
+    for trial in range(len(recorded_amplitude)): 
+         hdr = stats.linregress(stepValues[1]*1e-6,recorded_amplitude[trial]) 
+         linRegress_results.append(hdr)
+
+    
+    df_ns = pd.DataFrame(data=linRegress_results,index=data_all[0])
+    df_ns.to_csv(folder + r'\\analysedData\\' + 'negativeStepResults_py.csv')
+    
+    print("Analysed negative current steps...")
     return
 
 

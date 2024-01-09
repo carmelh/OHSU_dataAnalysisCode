@@ -2,7 +2,19 @@
 """
 Created on Thu Dec 14 08:57:33 2023
 
-@author: howeca
+Voltage Clamp Ephys
+For voltage holds
+
+Script to run through all the .abf ephys files for one biological repeat
+
+Outputs:
+    Dataframe (.csv) of holding_current_values
+    avg current pre treatment
+    avg current post treatment
+    indicies (frame num.) of time averaged over
+    figure of entire recorded current time series. Includes stimulation pulse
+
+@author: Carmel Howe
 """
 
 import os
@@ -11,7 +23,7 @@ import pyabf
 import matplotlib.pyplot as plt
 import pandas as pd 
 import sys
-sys.path.insert(1, r'~\GitHub\ephys_analysis\Python\ephys_functions_dont_change')
+sys.path.insert(1, r'~\GitHub\OHSU_dataAnalysisCode\ephys_functions_dont_change')
 import ephys_analysis_figure_funcs_dontChange as pf
 
 
@@ -41,7 +53,7 @@ else:
 
 filenames=np.array(os.listdir(holdFolder)) # list the files within that folder
 
-abf = pyabf.ABF(holdFolder + '\\' + filenames[0]) # import the UV hold file
+abf = pyabf.ABF(holdFolder + '\\' + filenames[0]) # import the hold file
 
 # assign variables from the abf file import
 time = abf.sweepX    
@@ -114,6 +126,8 @@ diff = endCurrent - steadyStateCurrent # difference
 data = [[folder, filenames[0], steadyStateCurrent, endCurrent, diff, startAvgIdx, endAvgIdx]]
 df = pd.DataFrame(data, columns=['folder', 'filename','steadyStateCurrent','endCurrent','diff','condIdx1','condIdx2'])
 df.to_csv(folder + r'\\analysedData\\' + 'holding_current_values_{}_pA.csv'.format(experiment))    
+
+
 
 
 ####### Figure ######
