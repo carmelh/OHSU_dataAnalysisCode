@@ -15,9 +15,8 @@ Outputs:
 """
 
 import sys
-sys.path.insert(1, r'Z:\Labs\Frank Lab\SHARED\000Frank lab shared\Data Analysis Scripts\Python\ephys_functions_dont_change')
+sys.path.insert(1, r'~\GitHub\OHSU_dataAnalysisCode\ephys_functions_dont_change')
 import ephys_analysis_funcs_dontChange as eaf
-import ephys_analysis_figure_funcs_dontChange as efig
 
 
 
@@ -25,6 +24,7 @@ import ephys_analysis_figure_funcs_dontChange as efig
 # insert csX_cellX folder here. You need to run this for each experimental repeat
 #e.g. folder=r'~\Carmel\Ephys\Hippo\Data\Senktide\231003_senktide_cClamp\cs2_cell1'
 folder=r'INSERT_FOLDER_HERE'
+expDrug = 'INSERT_DRUG'
 
 """ End of user inputs """
 
@@ -46,14 +46,15 @@ output_posSteps, output_negSteps = eaf.runAllSteps(folder)
 # negSteps is the same format
 
 
-eaf.numSpikes(output_posSteps,folder)
+eaf.numSpikes(output_posSteps, folder, expDrug)
 # saves the file numSpikesThreshold_py.csv
 # includes the file name
 # how many spikes at each current injection step
 # threhold i.e. the current step where the first AP occurs
+# saves number of spikes figure
 
 
-eaf.access_resistance(output_posSteps, folder)
+eaf.access_resistance(output_posSteps, folder, expDrug)
 # calculates the access resistance from the negative current step in your time trace
 # saves the file access_resistance_inMOhms_py.csv
 # includes the file name
@@ -61,7 +62,7 @@ eaf.access_resistance(output_posSteps, folder)
 # average of the access res and standard deviation
 # you want the deviation to be very small for each file. If it's large then you had a bad patch
 
-eaf.rmp(output_posSteps,folder)
+eaf.rmp(output_posSteps,folder, expDrug)
 # calculates the resting membrane potential from the start of each current step
 # saves the file rmp_py.csv (in mV)
 # includes the file name
@@ -78,7 +79,7 @@ eaf.rmp(output_posSteps,folder)
         # linear regression results
         # slope is input resistance in Ohms     
 if output_negSteps:
-    eaf.inputResistance(output_negSteps, folder)
+    eaf.inputResistance(output_negSteps, folder, expDrug)
 else:
     print("No negative steps")
     

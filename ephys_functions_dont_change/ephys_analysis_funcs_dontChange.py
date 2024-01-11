@@ -12,6 +12,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import pandas as pd
 from scipy import stats, signal
+import ephys_analysis_figure_funcs_dontChange as efig
+import time
+
+
+timestr = time.strftime("%y%m%d") # for saving figures and filenames with current date
 
 # to ignore some annoying warnings
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
@@ -250,7 +255,7 @@ def threshold(data):
 
 
 
-def numSpikes(data_all,folder):
+def numSpikes(output_posSteps,folder,expDrug):
     ''' count number of spikes for each current step '''
     # Outputs:
     # stepValues - the step values in pA
@@ -258,8 +263,8 @@ def numSpikes(data_all,folder):
     # threshold_idx - value of the current step where the first AP occurs
     # Saves .csv in analysedData folder with num_spikes and threshold_idx for every file in the input data
     
-    voltage = data_all[3]
-    current = data_all[2]
+    voltage = output_posSteps[3]
+    current = output_posSteps[2]
     
     stepInfo = startEnd_steps(current[1],'pos')
     stepValues = np.arange(0,len(voltage[0]),stepInfo[2]*100)
@@ -271,25 +276,44 @@ def numSpikes(data_all,folder):
     for trial in range(len(voltage)):
         volt_trial = voltage[trial,...]
         for sweep in range(len(voltage[0])):
-            num[sweep], peaks = spikeIdx(volt_trial[sweep,stepInfo[0]:stepInfo[1]],fs=1/data_all[1][1]) 
+            num[sweep], peaks = spikeIdx(volt_trial[sweep,stepInfo[0]:stepInfo[1]],fs=1/output_posSteps[1][1]) 
             pks.append(peaks)
         num_spikes[trial] = num
         
-    stepValues=absoluteStepValues(data_all) # find the step value for each current injection
+    stepValues=absoluteStepValues(output_posSteps) # find the step value for each current injection
     threshold_idx = threshold(num_spikes)
     threshold_idx = (threshold_idx * stepValues[0])*1000 # in pA
     
     # generates and saves pandas dataframe as .csv
-    df_ns = pd.DataFrame(data=num_spikes,columns=stepValues[1],index=data_all[0])
+    df_ns = pd.DataFrame(data=num_spikes,columns=stepValues[1],index=output_posSteps[0])
     df_ns['Threshold'] = threshold_idx
     df_ns.to_csv(folder + r'\\analysedData\\' + 'numSpikesThreshold_py.csv')
+    
+    colors = plt.cm.winter(np.linspace(0,1,len(num_spikes)))
+
+    fig = plt.gcf()      
+    ax = plt.subplot(111)  
+    # set y axis to be integer values only
+    for axis in [ax.yaxis]:
+        axis.set_major_locator(ticker.MaxNLocator(integer=True))
+    for sweepNumber in range(len(num_spikes)):
+        plt.plot(stepValues[1],np.transpose(num_spikes[sweepNumber]), color=colors[sweepNumber], linewidth=2, alpha=.8)
+    plt.plot(stepValues[1],num_spikes[0], linewidth=2,color='k',label='Baseline')
+    plt.plot(stepValues[1],num_spikes[len(num_spikes)-1], linewidth=2,color='red',label=expDrug)
+   
+    efig.lrBorders(ax)
+    fig.set_size_inches(4.5,4.5)
+    plt.xlabel('Current (pA)')
+    plt.ylabel('Num. Spikes')
+    ax.legend(frameon=False)
+    efig.saveFigure(fig,folder + r'\\figures\\','currentInjection_vs_numSpikes_all_drug_{}_{}'.format(expDrug,timestr))
     
     print("Analysed number of spikes...")
     return stepValues, num_spikes, threshold_idx
 
 
 
-def access_resistance(output_posSteps, folder):
+def access_resistance(output_posSteps, folder, expDrug):
     ''' calculates the access resistance from the negative current step
     that occurs at the begining of each recording '''
     
@@ -317,11 +341,22 @@ def access_resistance(output_posSteps, folder):
     
     df_ar.to_csv(folder + r'\\analysedData\\' + 'access_resistance_inMOhms_py.csv')
     
+    # plot figure of access resistance for each current step
+    fig= plt.gcf()      
+    ax = plt.subplot(111)  
+    plt.plot(stepValues[1],np.transpose(access_resistance))
+    efig.lrBorders(ax)
+    fig.set_size_inches(6,4.5)
+    plt.xlabel('Current (pA)')
+    plt.ylabel('Access Resistance MOhms')
+    ax.legend(labels=list(output_posSteps[0]) ,frameon=False, fontsize='xx-small',loc='upper left', bbox_to_anchor=(1, 1.05))
+    efig.saveFigurePNG(fig,folder + r'\\figures\\','currentInjection_vs_accessResistance_all_drug_{}_{}'.format(expDrug,timestr))
+    
     print("Analysed access resistance...")
     return
 
 
-def rmp(output_posSteps, folder):
+def rmp(output_posSteps, folder, expDrug):
     ''' calculates resting membrane potential from first 12000 frames '''
     # Outputs:
     # .csv of resting membrane potential
@@ -343,14 +378,27 @@ def rmp(output_posSteps, folder):
     
     df_rmp.to_csv(folder + r'\\analysedData\\' + 'rmp_py.csv')
     
+    
+    # plot figure of access resistance for each current step
+    fig= plt.gcf()      
+    ax = plt.subplot(111)  
+    plt.plot(stepValues[1],np.transpose(rmp))
+    efig.lrBorders(ax)
+    fig.set_size_inches(6,4.5)
+    plt.xlabel('Current (pA)')
+    plt.ylabel('RMP mV')
+    ax.legend(labels=list(output_posSteps[0]) ,frameon=False, fontsize='xx-small',loc='upper left', bbox_to_anchor=(1, 1.05))
+    efig.saveFigurePNG(fig,folder + r'\\figures\\','currentInjection_vs_rmp_all_drug_{}_{}'.format(expDrug,timestr))
+    
+    
     print("Analysed resting membrane potential...")
     return
 
 
-def inputResistance(data_all, folder):
+def inputResistance(output_negSteps, folder, expDrug):
     ''' calculates the input resistance from the negative current steps'''
-    voltage = data_all[3]
-    current = data_all[2]
+    voltage = output_negSteps[3]
+    current = output_negSteps[2]
     
     stepInfo = startEnd_steps(current[1],'neg')
     
@@ -360,8 +408,8 @@ def inputResistance(data_all, folder):
     recorded_amplitude = np.mean(voltage[:,:,ss_Start:stepInfo[1]],2)
     
     # set up dataframe to save
-    stepValues=absoluteStepValues(data_all)
-    df = pd.DataFrame(data=recorded_amplitude,columns=stepValues[1],index=data_all[0])
+    stepValues=absoluteStepValues(output_negSteps)
+    df = pd.DataFrame(data=recorded_amplitude,columns=stepValues[1],index=output_negSteps[0])
     
     df.to_csv(folder + r'\\analysedData\\' + 'negativeStepValues_in-mV_py.csv')
     
@@ -372,8 +420,30 @@ def inputResistance(data_all, folder):
          linRegress_results.append(hdr)
 
     
-    df_ns = pd.DataFrame(data=linRegress_results,index=data_all[0])
+    df_ns = pd.DataFrame(data=linRegress_results,index=output_negSteps[0])
     df_ns.to_csv(folder + r'\\analysedData\\' + 'negativeStepResults_py.csv')
+    
+    
+    ### figure ####
+    colors = plt.cm.winter(np.linspace(0,1,len(recorded_amplitude)))
+
+    fig = plt.gcf()      
+    ax = plt.subplot(111)  
+    # set y axis to be integer values only
+    for axis in [ax.yaxis]:
+        axis.set_major_locator(ticker.MaxNLocator(integer=True))
+    for sweepNumber in range(len(recorded_amplitude)):
+        plt.plot(stepValues[1], linRegress_results[sweepNumber].intercept + (linRegress_results[sweepNumber].slope/1e6)*stepValues[1], '--', color=colors[sweepNumber], linewidth=2, alpha=.8)
+    for sweepNumber in range(len(recorded_amplitude)):
+        plt.plot(stepValues[1],recorded_amplitude[sweepNumber],'o',color=colors[sweepNumber])
+    
+    ax.legend(labels=list(output_negSteps[0]) ,frameon=False, fontsize='xx-small',loc='upper left', bbox_to_anchor=(1, 1.05))
+    efig.lrBorders(ax)
+    fig.set_size_inches(4.5,4.5)
+    plt.xlabel('Current (pA)')
+    plt.ylabel('Voltage (mV)')
+    efig.saveFigurePNG(fig,folder + r'\\figures\\','inputResistance_drug_{}_{}'.format(expDrug,timestr))
+    
     
     print("Analysed negative current steps...")
     return

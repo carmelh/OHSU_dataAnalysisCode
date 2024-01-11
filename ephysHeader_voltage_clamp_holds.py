@@ -124,7 +124,7 @@ diff = endCurrent - steadyStateCurrent # difference
 # diff
 # condition indices
 data = [[folder, filenames[0], steadyStateCurrent, endCurrent, diff, startAvgIdx, endAvgIdx]]
-df = pd.DataFrame(data, columns=['folder', 'filename','steadyStateCurrent','endCurrent','diff','condIdx1','condIdx2'])
+df = pd.DataFrame(data, columns=['folder', 'filename','steadyStateCurrent','endCurrent','deltaCurrent','condIdx1','condIdx2'])
 df.to_csv(folder + r'\\analysedData\\' + 'holding_current_values_{}_pA.csv'.format(experiment))    
 
 

@@ -407,11 +407,9 @@ def voltage_hold(folder):
     return
 
 def voltage_hold_finalAnal(folder):
-    finalAnalysisFolder=r'Z:\Labs\Frank Lab\Carmel\Ephys\HEK\finalAnalysis'
+
     
     
-    # for controls. baseline + control e.g. UV
-    df = pd.read_csv(finalAnalysisFolder + '\\holding_current_values_trans_OCT-CAP_incubated_diffConcs.csv',index_col=0)
     
     concArray = np.array(df['deltaCurrent'])
     conc125 = concArray[0:1]
@@ -604,8 +602,7 @@ def voltage_hold_finalAnal(folder):
     df_stats = pd.DataFrame(data=ttest_results)
     df_stats.insert(0, "What", ["test stat","p-value"], True)
     df_stats.to_csv(finalAnalysisFolder + r'\\stats_threshold_trans_OCT-CAP_notIncubated_5uM_230428.csv')
-    
-    
+      
     
     return
 
