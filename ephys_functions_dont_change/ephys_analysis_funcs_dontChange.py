@@ -289,6 +289,9 @@ def numSpikes(output_posSteps,folder,expDrug):
     df_ns['Threshold'] = threshold_idx
     df_ns.to_csv(folder + r'\\analysedData\\' + 'numSpikesThreshold_py.csv')
     
+    
+    #### figure #####
+    # current injection vs. number of spikes for each file (trial) in the folder
     colors = plt.cm.winter(np.linspace(0,1,len(num_spikes)))
 
     fig = plt.gcf()      
@@ -473,20 +476,18 @@ def voltageSteps_allTrials(stepsFolder,filenames):
     time_same = (np.diff(np.vstack(time_all).reshape(len(time_all),-1),axis=0)==0).all()
     if time_same == True:
         time=time_all[0]
-       # print("Time reduced - good")
     else:
         print("your time arrays are different... you should figure out why")
     
     
     steps_same = (np.diff(np.vstack(steps_all).reshape(len(steps_all),-1),axis=0)==0).any()
-    #steps_same = (np.diff(np.vstack(steps_all).reshape(len(steps_all),-1),axis=0)==0).all()
     if steps_same == True:
         steps=steps_all[0]
-    #    print("Steps reduced - good")
     else:
         print("your steps arrays are different... you should figure out why")
         
     return filenames, time, steps, np.asanyarray(current_all)
+
 
 
 def runAllSteps_voltage(folder):
@@ -506,7 +507,8 @@ def runAllSteps_voltage(folder):
     return output_vSteps
 
 
-def voltage_IV(output_vSteps, folder):
+
+def voltage_IV(output_vSteps, folder, expDrug):
     ''' calculates steady state current for applied voltage steps '''
     
     current = output_vSteps[3]
@@ -519,5 +521,30 @@ def voltage_IV(output_vSteps, folder):
     steadyStateCurrent = np.mean(current[:,:,ss_Start:stepInfo[1]],2)    
     
     df = pd.DataFrame(data=steadyStateCurrent,columns=stepValues,index=output_vSteps[0])
-    df.to_csv(folder + r'\\analysedData\\' + 'steadyStateCurrent_perVoltageStep_in-pA_py.csv')    
+    df.to_csv(folder + r'\\analysedData\\' + 'steadyStateCurrent_perVoltageStep_in-pA_py.csv')  
+    
+    
+    
+    #### figure #####
+    # votlage injection vs. recorded current for each file (trial) in the folder
+    colors = plt.cm.winter(np.linspace(0,1,len(steadyStateCurrent)))
+
+    fig = plt.gcf()      
+    ax = plt.subplot(111)  
+    # set y axis to be integer values only
+    for axis in [ax.yaxis]:
+        axis.set_major_locator(ticker.MaxNLocator(integer=True))
+    for sweepNumber in range(len(steadyStateCurrent)):
+        plt.plot(stepValues,steadyStateCurrent[sweepNumber]/1000, color=colors[sweepNumber], linewidth=2, alpha=.8)
+    plt.plot(stepValues,steadyStateCurrent[0]/1000, linewidth=2,color='k',label='Baseline')
+    plt.plot(stepValues,steadyStateCurrent[len(steadyStateCurrent)-1]/1000, linewidth=2,color='red',label=expDrug)
+   
+    efig.lrBorders(ax)
+    ax.spines['left'].set_position(('data', 0)) # set positon of axis to be a 0,0
+    ax.spines['bottom'].set_position(('data', 0))
+    fig.set_size_inches(4.5,4.5)
+    ax.legend(labels=list(output_vSteps[0]) ,frameon=False, fontsize='xx-small',loc='upper left', bbox_to_anchor=(1, 1.05))
+    efig.saveFigure(fig,folder + r'\\figures\\','IV_currentInj-nA_{}_{}'.format(expDrug,timestr))
+    
+    print("Analysed voltage steps...")
     return

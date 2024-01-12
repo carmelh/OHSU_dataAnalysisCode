@@ -1051,7 +1051,6 @@ def finalInputRes():
     ax.spines['bottom'].set_linewidth(2)
     ax.spines['left'].set_linewidth(2)
     plt.ylabel('Input Resistance (MOhms)')
-    # plt.xlim((0.5,3.1))
     plt.tight_layout()
     fig.set_size_inches(4.5,4.5) 
     pf.saveFigure(fig,folder + r'\\resultsCapcasisin\\','inputResistance_1uM-cap_poired_230412')
