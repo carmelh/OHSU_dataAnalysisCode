@@ -2,6 +2,8 @@
 """
 Created on Mon Jan  8 15:10:11 2024
 
+Final statistical analysis of the voltage clamp hold data
+
 different functions (not really but just organising them as such)
 for different figures and statistal analyses for different
 experiments I did
@@ -9,7 +11,6 @@ experiments I did
 @author: Carmel Howe
 """
 
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,7 +18,6 @@ from scipy import stats
 import sys
 sys.path.insert(1, r'C:\Users\howeca\Documents\GitHub\carmel_functions')
 import plotting_functions as pf
-import general_functions as gf
 import seaborn as sns 
 import time
 
