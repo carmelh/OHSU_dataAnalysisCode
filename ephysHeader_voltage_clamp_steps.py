@@ -2,11 +2,19 @@
 """
 Created on Mon Oct 30 14:11:07 2023
 
-@author: howeca
+Voltage Clamp Ephys
+Script to run through all the .abf ephys files for one cell from the 'vSteps' folder
+
+Outputs:
+    Processed steps
+    number of spikes
+    access resistance
+
+@author: Carmel Howe
 """
 
 import sys
-sys.path.insert(1, r'~\GitHub\OHSU_dataAnalysisCode\ephys_analysis_funcs_dontChange')
+sys.path.insert(1, r'~\Documents\GitHub\OHSU_dataAnalysisCode\ephys_functions_dont_change')
 import ephys_analysis_funcs_dontChange as eaf
 
 ''' ######## User inputs ######## '''
@@ -31,6 +39,15 @@ output_vSteps = eaf.runAllSteps_voltage(folder)
 # output_posSteps[1] = time in seconds
 # output_posSteps[2] = injected voltage in mV
 # output_posSteps[3] = recorded current in pA
+
+
+eaf.access_resistance_vClamp(output_vSteps, folder)
+# calculates the access resistance from the negative voltage step in your time trace
+# saves the file access_resistance_inMOhms_py.csv
+# includes the file name
+# access resistance in MOhms for each voltage step
+# average of the access res and standard deviation
+# you want the deviation to be very small for each file. If it's large then you had a bad patch
 
 
 # process current vs, voltage clamp steps

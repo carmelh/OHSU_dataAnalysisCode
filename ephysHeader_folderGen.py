@@ -2,7 +2,10 @@
 """
 Created on Wed Feb 8 2023
 
-@author: howeca
+Script to run through all the coverslip/cell folders to make the standard folders
+for currentClamp and voltageClamp
+
+@author: Carmel Howe
 """
 
 import sys
@@ -11,8 +14,8 @@ import ephys_analysis_funcs_dontChange as ef
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 
 
-qtCreatorFile = r'Z:\Labs\Frank Lab\SHARED\000Frank lab shared\Data Analysis Scripts\Python\ephys_functions_dont_change\folderGenerator.ui' # Enter file here.
- 
+qtCreatorFile = r'Z:\Labs\Frank Lab\SHARED\000Frank lab shared\Data Analysis Scripts\Python\ephys_functions_dont_change\folderGenerator.ui'
+
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
  
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):

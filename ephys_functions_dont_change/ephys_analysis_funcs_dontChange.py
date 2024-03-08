@@ -536,8 +536,8 @@ def voltage_IV(output_vSteps, folder, expDrug):
         axis.set_major_locator(ticker.MaxNLocator(integer=True))
     for sweepNumber in range(len(steadyStateCurrent)):
         plt.plot(stepValues,steadyStateCurrent[sweepNumber]/1000, color=colors[sweepNumber], linewidth=2, alpha=.8)
-    plt.plot(stepValues,steadyStateCurrent[0]/1000, linewidth=2,color='k',label='Baseline')
-    plt.plot(stepValues,steadyStateCurrent[len(steadyStateCurrent)-1]/1000, linewidth=2,color='red',label=expDrug)
+    #plt.plot(stepValues,steadyStateCurrent[0]/1000, linewidth=2,color='k',label='Baseline')
+    #plt.plot(stepValues,steadyStateCurrent[len(steadyStateCurrent)-1]/1000, linewidth=2,color='red',label=expDrug)
    
     efig.lrBorders(ax)
     ax.spines['left'].set_position(('data', 0)) # set positon of axis to be a 0,0
@@ -547,4 +547,36 @@ def voltage_IV(output_vSteps, folder, expDrug):
     efig.saveFigure(fig,folder + r'\\figures\\','IV_currentInj-nA_{}_{}'.format(expDrug,timestr))
     
     print("Analysed voltage steps...")
+    return
+
+
+def access_resistance_vClamp(output_vSteps, folder):
+    ''' calculates the access resistance from the negative voltage step
+    that occurs at the begining of each recording '''
+    
+    voltage = output_vSteps[2]
+    current = output_vSteps[3]
+
+    stepInfo = startEnd_steps(voltage[0],'neg')
+    
+    # current value during negative voltage step
+    recorded_amplitude = np.mean(current[:,:,stepInfo[0]:stepInfo[1]],2)
+    
+    # R = V (mV) / I (mA) 
+    access_resistance = (stepInfo[2]*10e-3) / (recorded_amplitude)*10e-6
+    access_resistance = access_resistance* 1e8 # in MOhms
+    
+    # set up pandas dataframe to save
+    stepInfo = startEnd_steps(voltage,'voltage')
+    stepValues = np.linspace(int(voltage[0,stepInfo[0]+100]),int(voltage[len(voltage)-1,stepInfo[0]+100]),len(voltage))
+    
+    df_ar = pd.DataFrame(data=access_resistance,columns=stepValues,index=output_vSteps[0])
+    
+    fileAverage = np.mean(access_resistance,1)
+    fileDeviation = np.std(access_resistance,1) # shouldnt vary too much
+    
+    df_ar['average'] = fileAverage
+    df_ar['deviation'] = fileDeviation
+    
+    df_ar.to_csv(folder + r'\\analysedData\\' + 'access_resistance_inMOhms_py.csv')
     return
